@@ -41,7 +41,7 @@ import com.performetriks.performator.http.PFRHttp;
  * NOTE: This is a single-file demonstration. The generated Java code in the right pane is
  * textual output and not compiled/executed by this application.
  *****************************************************************************/
-public class PFRHttpRecorder extends PFRConverterUI {
+public class PFRHttpRecorderUI extends PFRConverterUI {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -58,6 +58,8 @@ public class PFRHttpRecorder extends PFRConverterUI {
 
 	private RequestModel requestModel = new RequestModel();
 	
+	private static PFRHttpRecorderUI ui = new PFRHttpRecorderUI();
+	
 	private ProxyRecorder recorder = null;
 
 	/*****************************************************************************
@@ -67,16 +69,17 @@ public class PFRHttpRecorder extends PFRConverterUI {
 	 *****************************************************************************/
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
-			PFRHttpRecorder g = new PFRHttpRecorder();
-			g.setVisible(true);
+			new PFRHttpRecorderUI()
+					.setVisible(true);
 		});
 	}
 
 	/*****************************************************************************
 	 * Constructor: sets up the JFrame and initializes UI components.
 	 *****************************************************************************/
-	public PFRHttpRecorder() {
+	public PFRHttpRecorderUI() {
 		super("Performator Http Recorder");
+		ui = this;
 		this.setRequestModel(requestModel);
 	}
 	
@@ -102,7 +105,7 @@ public class PFRHttpRecorder extends PFRConverterUI {
 			// Add update listeners
 			btnStartProxy.addActionListener(e -> startProxy());
 			btnStopProxy.addActionListener(e -> stopProxy());
-			btnStopProxy.addActionListener(e -> clearRecordings());
+			btnClearRecordings.addActionListener(e -> clearRecordings());
 		}
 		
 		
@@ -113,6 +116,9 @@ public class PFRHttpRecorder extends PFRConverterUI {
 	 *****************************************************************************/
 	private void clearRecordings() {
 		requestModel.clear();
+		SwingUtilities.invokeLater(() -> { 
+			ui.regenerateCode(); 
+		});
 	}
 		
 	/*****************************************************************************

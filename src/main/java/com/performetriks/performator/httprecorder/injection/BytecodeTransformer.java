@@ -33,7 +33,6 @@ public class BytecodeTransformer implements ClassFileTransformer {
 
 		//InjectionAgent.log("[INFO] "+className);
 		
-		System.out.print("x");
 		if(className.contains("HttpUtil")
 		|| className.contains("Host")) {
 			InjectionAgent.log("DEBUG", className);

@@ -4,3 +4,5 @@
 /reportFiles/js/bootstrap.js
 /target/
 /dependency-reduced-pom.xml
+/littleproxy_cert
+/littleproxy_keystore.jks

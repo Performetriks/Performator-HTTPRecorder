@@ -17,6 +17,7 @@ import com.performetriks.performator.conversion.RequestModel;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
@@ -30,13 +31,13 @@ public class ProxyRecorder {
 	public static final Logger logger = LoggerFactory.getLogger(ProxyRecorder.class);
 	
     private final RequestModel requestModel;
-    private final PFRHttpRecorder ui;
+    private final PFRHttpRecorderUI ui;
     
     private final SelfSignedSslEngineSource trustAll = new SelfSignedSslEngineSource(true);
 
     private HttpProxyServer server;
     
-    public ProxyRecorder(PFRHttpRecorder ui,
+    public ProxyRecorder(PFRHttpRecorderUI ui,
                          RequestModel model) {
         this.ui = ui;
         this.requestModel = model;
@@ -54,34 +55,36 @@ public class ProxyRecorder {
                 .withManInTheMiddle(ImpersonatingMitmManager.builder().build())
                 .withFiltersSource(new HttpFiltersSourceAdapter() {
 
+
                     public HttpFilters filterRequest(HttpRequest originalRequest,
                                                      ChannelHandlerContext ctx) {
-                    	
-                    	System.out.println("Received request: "+originalRequest.getUri());
                     	
                         return new HttpFiltersAdapter(originalRequest) {
                         	
                         	RequestEntry entry = new RequestEntry();
                         	
-                            // ================= REQUEST =================
-
                             @Override
                             public HttpResponse clientToProxyRequest(HttpObject httpObject) {
                                 
-                            	System.out.println("A");
-                            	
                             	//---------------------------------
                             	// Request
                             	if (httpObject instanceof HttpRequest req) {
-                            	    String uri = req.getUri();
+                            		HttpMethod method = req.getMethod();
+                            		String uri = req.getUri();
+                            		
+                            		if(method == HttpMethod.CONNECT) {
+                            			return null; // skip
+                            		}
+                            		
+                            		System.out.println("Received Request: " + req.getMethod() + " " + req.getUri());
 
                             	    QueryStringDecoder decoder = new QueryStringDecoder(uri);
 
                             	    String path = decoder.path(); // /some/path
                             	    Map<String, List<String>> params = decoder.parameters(); // query params
 
-                            	    System.out.println("Path: " + path);
-                            	    System.out.println("Query params: " + params);
+                            	    //System.out.println("Path: " + path);
+                            	    //System.out.println("Query params: " + params);
 
                             	    entry.method(req.getMethod().name());
                             	    entry.setURL(uri);
@@ -101,7 +104,7 @@ public class ProxyRecorder {
                                 //---------------------------------
                             	// Body
                                 if (httpObject instanceof HttpContent content) {
-                                	System.out.println("C");
+
                                     String bodyPart = content.content().toString(io.netty.util.CharsetUtil.UTF_8);
                                     if(! entry.hasBody() ) {
                                     	entry.body(bodyPart);

@@ -69,9 +69,9 @@
 		    <groupId>org.javassist</groupId>
 		    <artifactId>javassist</artifactId>
 		    <version>3.30.2-GA</version>
+		    <scope>compile</scope>
 		</dependency>
 		
-	        
 		<dependency>
 		    <groupId>ch.qos.logback</groupId>
 		    <artifactId>logback-classic</artifactId>
@@ -254,89 +254,6 @@
 					</gpgArguments>
 				</configuration>
 			</plugin>
-			
-			<!-- ================= SHADED JAR ================== -->
-			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-shade-plugin</artifactId>
-			    <version>3.6.0</version>
-			    <executions>
-			        <execution>
-			            <phase>package</phase>
-			            <goals>
-			                <goal>shade</goal>
-			            </goals>
-			            <configuration>
-			            	<filters>
-						        <filter>
-						            <artifact>*:*</artifact>
-						            <excludes>
-						                <exclude>META-INF/*.SF</exclude>
-						                <exclude>META-INF/*.DSA</exclude>
-						                <exclude>META-INF/*.RSA</exclude>
-						            </excludes>
-						        </filter>
-						    </filters>
-			                <transformers>
-			                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-			                        <manifestEntries>
-			                        	<Premain-Class>com.performetriks.performator.httprecorder.injection.InjectionAgent</Premain-Class>
-			                        	<Launcher-Agent-Class>com.performetriks.performator.httprecorder.injection.InjectionAgent</Launcher-Agent-Class>
-			                            <Main-Class>com.performetriks.performator.httprecorder.PFRHttpRecorder</Main-Class>
-			                            <Can-Redefine-Classes>true</Can-Redefine-Classes>
-			                            <Can-Retransform-Classes>true</Can-Retransform-Classes>
-			                            <Specification-Title>${project.artifactId}</Specification-Title>
-			                            <Specification-Version>${project.version}</Specification-Version>
-			                            <Implementation-Title>${project.artifactId}</Implementation-Title>
-			                            <Implementation-Version>${project.version}</Implementation-Version>
-			                            <Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
-			                        </manifestEntries>
-			                    </transformer>
-			                </transformers>
-			            </configuration>
-			        </execution>
-			    </executions>
-			</plugin>
-			
-			           <!-- ================= EXEC ================== -->
-            <plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.6.2</version>
-				<executions>
-					<execution>
-						<id>ExecuteGatlingSimulation</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>integration-test</phase>
-						<configuration>
-							<executable>java</executable>
-
-							<arguments>
-								
-								<argument>-javaagent:"${project.build.directory}/${project.build.finalName}.jar"</argument>
-								<argument>--add-opens=java.base/java.lang=ALL-UNNAMED</argument>
-								
-								<argument>-XX:+UnlockExperimentalVMOptions</argument>
-								<argument>-XX:+EnableJVMCI</argument>
-								
-								<argument>-classpath</argument>
-					            <classpath />
-					            
-					            <argument>com.performetriks.performator.httprecorder.PFRHttpRecorder</argument>
-					            
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<systemProperties>
-				    	<projectProperties /> <!-- automatically propagate all -D argument values -->
-				    </systemProperties>
-				</configuration>
-			</plugin>
-			
 
 		</plugins>
 
