@@ -22,6 +22,7 @@ import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.ssl.SslHandler;
 import net.lightbody.bmp.mitm.manager.ImpersonatingMitmManager;
 
 
@@ -59,35 +60,51 @@ public class ProxyRecorder {
                     public HttpFilters filterRequest(HttpRequest originalRequest,
                                                      ChannelHandlerContext ctx) {
                     	
+                    	boolean isHttps = ctx.pipeline().get(SslHandler.class) != null;
+                    	
                         return new HttpFiltersAdapter(originalRequest) {
                         	
                         	RequestEntry entry = new RequestEntry();
-                        	
+
                             @Override
                             public HttpResponse clientToProxyRequest(HttpObject httpObject) {
                                 
+                            	
                             	//---------------------------------
                             	// Request
                             	if (httpObject instanceof HttpRequest req) {
+                            		
+                            		//---------------------------------
+                                	// Retrieve Method and URL
                             		HttpMethod method = req.getMethod();
                             		String uri = req.getUri();
                             		
+
                             		if(method == HttpMethod.CONNECT) {
                             			return null; // skip
                             		}
                             		
-                            		System.out.println("Received Request: " + req.getMethod() + " " + req.getUri());
-
+                            		System.out.println("Received Request: " + method + " " + uri);
+                            		
+                            		//---------------------------------
+                                	// Add Server if missing
+                            		if( ! uri.trim().toLowerCase().startsWith("http") ) {
+                                		
+                            			String host = req.headers().get("Host");                      			
+                            	        String protocol = isHttps ? "https://" : "http://";
+                            			
+                            			uri = protocol + host + uri;
+                            		}
+                            		
+                            		//---------------------------------
+                                	// Decode Params
                             	    QueryStringDecoder decoder = new QueryStringDecoder(uri);
 
                             	    String path = decoder.path(); // /some/path
                             	    Map<String, List<String>> params = decoder.parameters(); // query params
 
-                            	    //System.out.println("Path: " + path);
-                            	    //System.out.println("Query params: " + params);
 
-                            	    entry.method(req.getMethod().name());
-                            	    entry.setURL(uri);
+                            	    
                             	    
                             	    //---------------------------
                                     // Headers
@@ -95,6 +112,10 @@ public class ProxyRecorder {
                                         entry.header(h.getKey(), h.getValue());
                                     }
                                     
+                                    //---------------------------
+                                    // Add entry
+                                    entry.method(req.getMethod().name());
+                            	    entry.setURL(uri);
                                     synchronized (requestModel) {
                                         requestModel.add(entry);
                                     }
