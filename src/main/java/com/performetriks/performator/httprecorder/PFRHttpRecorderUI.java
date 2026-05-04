@@ -12,6 +12,9 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
@@ -55,6 +58,7 @@ public class PFRHttpRecorderUI extends PFRConverterUI {
 	private JButton btnStopProxy;
 	private JButton btnClearRecordings;
 	private JLabel labelPort;
+	private JSpinner fieldPort;
 
 	private RequestModel requestModel = new RequestModel();
 	
@@ -91,16 +95,19 @@ public class PFRHttpRecorderUI extends PFRConverterUI {
 		
 		if(btnStartProxy == null) {
 			
+			labelPort = new JLabel("Port");
+			fieldPort = new JSpinner(new SpinnerNumberModel(9999, 0, Integer.MAX_VALUE, 1));
+			
 			btnStartProxy = new JButton("Start Proxy");
 			btnStopProxy = new JButton("Stop Proxy");
 			btnClearRecordings = new JButton("Clear Recordings");
-			labelPort = new JLabel("Port");
-			
+
 			//labelPort.setForeground(reallyLight);
+			controlsPanel.add(labelPort);
+			controlsPanel.add(fieldPort);
 			controlsPanel.add(btnStartProxy);
 			controlsPanel.add(btnStopProxy);
 			controlsPanel.add(btnClearRecordings);
-			controlsPanel.add(labelPort);
 			
 			// Add update listeners
 			btnStartProxy.addActionListener(e -> startProxy());
@@ -128,7 +135,7 @@ public class PFRHttpRecorderUI extends PFRConverterUI {
 		
 		if(recorder != null) { stopProxy(); }
 		
-		recorder = new ProxyRecorder(this, requestModel).start(9999);
+		recorder = new ProxyRecorder(this, requestModel).start( (Integer) fieldPort.getValue());
 	}
 	
 	/*****************************************************************************
